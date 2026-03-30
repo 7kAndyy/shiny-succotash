@@ -58,7 +58,7 @@ local function createNewShades(): Part
     AntiMonsterShades.Anchored = true
     AntiMonsterShades.CanCollide = false
     AntiMonsterShades.CanQuery = true
-    AntiMonsterShades.CanTouch = true
+    AntiMonsterShades.CanTouch = false
     AntiMonsterShades.Size = Vector3.new(16, 16, 0.5)
     AntiMonsterShades.Parent = get_map_root()
 
