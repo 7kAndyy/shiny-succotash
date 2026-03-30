@@ -1,3 +1,6 @@
+-- # Client Autorun
+
+-- Constants
 TARGET1_PREFIX = "AK308" :: string
 DESTINATION1_PREFIX = "QBZ" :: string
 TARGET2_PREFIX = "UMP9" :: string
@@ -5,9 +8,12 @@ DESTINATION2_PREFIX = "P320" :: string
 SWITCH_SOUNDS = false :: boolean
 ONLY_SWAP_VALID_SOUNDs = false :: boolean
 
+-- Variables
 local amd_connection: RBXScriptConnection
 local anti_monster_device: Part
 
+-- Methods
+-- Replaces (or swaps) one set of gun sound's with another
 local function replace_gun_sounds(destination: string, target: string, swap: boolean)
     if swap == nil then
         swap = false
@@ -40,6 +46,8 @@ local function replace_gun_sounds(destination: string, target: string, swap: boo
     end
 end
 
+-- Creates a transparent shield that gives players a way to directly look at the monster without it disappearing
+-- and lets players approach the monster (as long as the shield covers them)
 local function createNewShades(): Part
     local AntiMonsterShades: Part = create_instance("Part")
     AntiMonsterShades.Name = "anti-monster device"
@@ -64,6 +72,7 @@ local function createNewShades(): Part
     return AntiMonsterShades
 end
 
+--  Method for the framework.on_spawned event
 local function on_spawned()
     print("spawned")
     anti_monster_device = createNewShades()
@@ -86,6 +95,7 @@ local function on_spawned()
     end)
 end
 
+--  Method for the framework.on_died event
 local function on_died()
     if amd_connection ~= nil then
         anti_monster_device:Destroy()
@@ -95,6 +105,7 @@ local function on_died()
     end
 end
 
+-- Runtime
 framework.on_spawned:Connect(on_spawned)
 framework.on_died:Connect(on_died)
 
