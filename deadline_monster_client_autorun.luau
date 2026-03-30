@@ -59,7 +59,7 @@ local function createNewShades(): Part
     AntiMonsterShades.CanCollide = false
     AntiMonsterShades.CanQuery = true
     AntiMonsterShades.CanTouch = false
-    AntiMonsterShades.Size = Vector3.new(16, 16, 0.5)
+    AntiMonsterShades.Size = Vector3.new(50, 50, 0.5)
     AntiMonsterShades.Parent = get_map_root()
 
     local light: SpotLight = create_instance("SpotLight")
@@ -78,25 +78,24 @@ local function on_spawned()
     anti_monster_device = createNewShades()
     amd_connection = time.renderstep("AMD_update", function(delta_time)
         if framework.character.is_alive() then
-            if anti_monster_device == nil then
-                anti_monster_device = createNewShades()
-            end
-        
-            local camera_cframe: CFrame = framework.character.get_camera_cframe()
-            local amd_new_cframe: CFrame = camera_cframe + camera_cframe.LookVector * (10)
-            local amd_new_position: Vector3 = amd_new_cframe.Position
-            local amd_ori_rx, amd_ori_ry, amd_ori_rz: number = amd_new_cframe:ToOrientation()
-            local amd_ori_dx, amd_ori_dy, amd_ori_dz: number = math.deg(amd_ori_rx), math.deg(amd_ori_ry), math.deg(amd_ori_rz)
-            local amd_new_ori: Vector3 = Vector3.new(amd_ori_dx, amd_ori_dy, amd_ori_dz)
+            if anti_monster_device ~= nil then
+                local camera_cframe: CFrame = framework.character.get_camera_cframe()
+                local amd_new_cframe: CFrame = camera_cframe + camera_cframe.LookVector * (10)
+                local amd_new_position: Vector3 = amd_new_cframe.Position
+                local amd_ori_rx, amd_ori_ry, amd_ori_rz: number = amd_new_cframe:ToOrientation()
+                local amd_ori_dx, amd_ori_dy, amd_ori_dz: number = math.deg(amd_ori_rx), math.deg(amd_ori_ry), math.deg(amd_ori_rz)
+                local amd_new_ori: Vector3 = Vector3.new(amd_ori_dx, amd_ori_dy, amd_ori_dz)
 
-            anti_monster_device.Position = amd_new_position
-            anti_monster_device.Orientation = amd_new_ori
+                anti_monster_device.Position = amd_new_position
+                anti_monster_device.Orientation = amd_new_ori
+            end
         end
     end)
 end
 
 --  Method for the framework.on_died event
 local function on_died()
+    print("died")
     if amd_connection ~= nil then
         anti_monster_device:Destroy()
 

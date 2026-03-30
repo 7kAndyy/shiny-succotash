@@ -3,7 +3,7 @@
 -- Constants
 local MAP_CONFIG = {gamemode = "NONE", is_day = false, lights_out = true, map = "misc_backrooms", time = 0}
 local MAP_PRESET = "blank"
-local MONSTER_COUNT = 1
+local MONSTER_COUNT = 3
 
 -- Character Property Changes
 sharedvars.plr_model = "orchids_pbr_set"
