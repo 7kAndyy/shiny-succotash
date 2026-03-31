@@ -62,12 +62,14 @@ local function createNewShades(): Part
     AntiMonsterShades.Size = Vector3.new(50, 50, 0.5)
     AntiMonsterShades.Parent = get_map_root()
 
-    local light: SpotLight = create_instance("SpotLight")
-    light.Angle = 120
-    light.Brightness = 1
-    light.Range = 16
-    light.Enabled = true
-    light.Parent = AntiMonsterShades
+    --[[ Optional Light
+        local light: SpotLight = create_instance("SpotLight")
+        light.Angle = 120
+        light.Brightness = 1
+        light.Range = 16
+        light.Enabled = true
+        light.Parent = AntiMonsterShades
+    ]]
 
     return AntiMonsterShades
 end
