@@ -1,20 +1,62 @@
 -- # Client Autorun
+local client_module = {}
+local gui_module = {}
+local navigation_module = {}
 
 -- Constants
-TARGET1_PREFIX = "AK308" :: string
-DESTINATION1_PREFIX = "QBZ" :: string
-TARGET2_PREFIX = "UMP9" :: string
-DESTINATION2_PREFIX = "P320" :: string
-SWITCH_SOUNDS = false :: boolean
-ONLY_SWAP_VALID_SOUNDs = false :: boolean
+local AMD_DISTANCE = 7.5
+local SWITCH_SOUNDS = false :: boolean
+local ONLY_SWAP_VALID_SOUNDS = false :: boolean
 
 -- Variables
 local amd_connection: RBXScriptConnection
 local anti_monster_device: Part
 
 -- Methods
+-- \\ navigation_module Methods
+local function __isChildOfRestrictedFolder(instanceToLook)
+    local isNotAChildOfWorkspace, _result = pcall(function(thisInstance)
+        local potentialWorkspaceChild = thisInstance.Parent
+    end, instanceToLook)
+
+    return not isNotAChildOfWorkspace
+end
+
+local function __searchInstanceParentsToFindIgnoreFolder(instanceAtStep)
+    if __isChildOfRestrictedFolder(instanceAtStep) then return end
+    local thisInstanceParent = instanceAtStep.Parent
+    if not thisInstanceParent then return end
+
+    if thisInstanceParent.Name == "ignore" and thisInstanceParent.is_a("Folder") then
+        if not __isChildOfRestrictedFolder(thisInstanceParent) then return end
+        return thisInstanceParent
+    end
+
+    return __searchInstanceParentsToFindIgnoreFolder(thisInstanceParent)
+end
+
+function navigation_module:getIgnoreFolderUsingTaggedChildren()
+    for indexOfTagList, tagString in pairs(tags.get_tags()) do
+        for indexOfInstance, instance in pairs(tags.get_tagged(tagString)) do
+            local potentialIgnoreFolderCanidate = __searchInstanceParentsToFindIgnoreFolder(instance)
+            if not potentialIgnoreFolderCanidate then continue end
+            return potentialIgnoreFolderCanidate
+        end
+    end
+end
+
+-- \\ gui_module Methods
+function gui_module.draw()
+    iris:Connect(function()
+        local gunInfoWindow = iris.Window({"GUN_INFORMATION"})
+            iris.Text({"GUN_INFO_NAME"})
+        iris.End()
+    end)
+end
+
+-- \\ client_module Methods
 -- Replaces (or swaps) one set of gun sound's with another
-local function replace_gun_sounds(destination: string, target: string, swap: boolean)
+function client_module:replace_gun_sounds(destination: string, target: string, swap: boolean)
     if swap == nil then
         swap = false
     end
@@ -28,7 +70,7 @@ local function replace_gun_sounds(destination: string, target: string, swap: boo
             local original_target_sound = value
             local original_dest_sound = config.gunshots[original_destination_sound_name]
 
-            local is_dest_sound_valid = ONLY_SWAP_VALID_SOUNDs and original_dest_sound ~= nil or true
+            local is_dest_sound_valid = ONLY_SWAP_VALID_SOUNDS and original_dest_sound ~= nil or true
             if is_dest_sound_valid then
                 if SWITCH_SOUNDS then
                     config.gunshots[name] = original_dest_sound
@@ -48,65 +90,76 @@ end
 
 -- Creates a transparent shield that gives players a way to directly look at the monster without it disappearing
 -- and lets players approach the monster (as long as the shield covers them)
-local function createNewShades(): Part
-    local AntiMonsterShades: Part = create_instance("Part")
-    AntiMonsterShades.Name = "anti-monster device"
-    AntiMonsterShades.Transparency = 0
-    AntiMonsterShades.BrickColor = BrickColor.Green()
-    AntiMonsterShades.CastShadow = false
-    AntiMonsterShades.Material = Enum.Material.ForceField
-    AntiMonsterShades.Anchored = true
-    AntiMonsterShades.CanCollide = false
-    AntiMonsterShades.CanQuery = true
-    AntiMonsterShades.CanTouch = false
-    AntiMonsterShades.Size = Vector3.new(50, 50, 0.5)
-    AntiMonsterShades.Parent = get_map_root()
+function client_module:createNewShield(): Part
+    local amd: Part = create_instance("Part")
+    amd.Name = "anti-monster device"
+    amd.Transparency = 0
+    amd.Material = Enum.Material.ForceField
+    amd.Color = Color3.fromRGB(255, 255, 255)
+    amd.CastShadow = false
+    amd.Anchored = true
+    amd.CanCollide = false
+    amd.CanQuery = true -- This needs to be enabled
+    amd.CanTouch = false
+    amd.CollisionGroup = "wall"
+    amd.Size = Vector3.new(75, 75, 0.125)
+    amd.Parent = get_map_root() -- navigation_module:getIgnoreFolderUsingTaggedChildren()
+    return amd
+end
 
-    local light: SpotLight = create_instance("SpotLight")
-    light.Angle = 120
-    light.Brightness = 1
-    light.Range = 16
-    light.Enabled = true
-    light.Parent = AntiMonsterShades
+-- Renderstep function for the AMD_update renderstep loop
+-- Updates the AMD position
+local function AMD_update(delta_time)
+    if framework.character.is_alive() then
+        if anti_monster_device ~= nil then
+            local camera_cframe: CFrame = framework.character.get_camera_cframe()
+            local amd_new_cframe: CFrame = camera_cframe + camera_cframe.LookVector * AMD_DISTANCE
+            local amd_new_position: Vector3 = amd_new_cframe.Position
+            local amd_ori_rx, amd_ori_ry, amd_ori_rz: number = amd_new_cframe:ToOrientation()
+            local amd_ori_dx, amd_ori_dy, amd_ori_dz: number = math.deg(amd_ori_rx), math.deg(amd_ori_ry), math.deg(amd_ori_rz)
+            local amd_new_ori: Vector3 = Vector3.new(amd_ori_dx, amd_ori_dy, amd_ori_dz)
 
-    return AntiMonsterShades
+            anti_monster_device.Position = amd_new_position
+            anti_monster_device.Orientation = amd_new_ori
+        end
+    end
 end
 
 --  Method for the framework.on_spawned event
-local function on_spawned()
+function client_module.on_spawned()
     print("spawned")
-    anti_monster_device = createNewShades()
-    amd_connection = time.renderstep("AMD_update", function(delta_time)
-        if framework.character.is_alive() then
-            if anti_monster_device ~= nil then
-                local camera_cframe: CFrame = framework.character.get_camera_cframe()
-                local amd_new_cframe: CFrame = camera_cframe + camera_cframe.LookVector * (10)
-                local amd_new_position: Vector3 = amd_new_cframe.Position
-                local amd_ori_rx, amd_ori_ry, amd_ori_rz: number = amd_new_cframe:ToOrientation()
-                local amd_ori_dx, amd_ori_dy, amd_ori_dz: number = math.deg(amd_ori_rx), math.deg(amd_ori_ry), math.deg(amd_ori_rz)
-                local amd_new_ori: Vector3 = Vector3.new(amd_ori_dx, amd_ori_dy, amd_ori_dz)
-
-                anti_monster_device.Position = amd_new_position
-                anti_monster_device.Orientation = amd_new_ori
-            end
-        end
-    end)
+    anti_monster_device = client_module:createNewShield()
+    amd_connection = time.renderstep("AMD_update", AMD_update)
 end
 
 --  Method for the framework.on_died event
-local function on_died()
+function client_module.on_died()
     print("died")
-    if amd_connection ~= nil then
-        anti_monster_device:Destroy()
+    if anti_monster_device ~= nil then
+        anti_monster_device.destroy()
+        print("destroyed shield")
+    end
 
+    if amd_connection ~= nil then
         amd_connection:Disconnect()
         amd_connection = nil
+        print("disconnected")
     end
 end
 
 -- Runtime
-framework.on_spawned:Connect(on_spawned)
-framework.on_died:Connect(on_died)
+-- \\ Replace/Swap Gun Sounds
+client_module:replace_gun_sounds("QBZ", "AK308", false)
+client_module:replace_gun_sounds("P320", "UMP9", false)
+client_module:replace_gun_sounds("HK416", "M4A1", false)
+client_module:replace_gun_sounds("AK_762", "FAL", false)
 
-replace_gun_sounds(DESTINATION1_PREFIX, TARGET1_PREFIX, SWITCH_SOUNDS)
-replace_gun_sounds(DESTINATION2_PREFIX, TARGET2_PREFIX, SWITCH_SOUNDS)
+-- \\ Create Events
+framework.on_spawned:Connect(client_module.on_spawned)
+framework.on_died:Connect(client_module.on_died)
+
+shared["client_module"] = client_module
+shared["gui_module"] = gui_module
+shared["navigation_module"] = navigation_module
+
+return client_module, gui_module, navigation_module
