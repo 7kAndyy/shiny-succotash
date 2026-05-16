@@ -1,0 +1,20 @@
+{
+    "robloxLsp.diagnostics.globals": [
+        "weapons",
+        "spawning",
+        "sharedvars",
+        "chat",
+        "map",
+        "on_player_spawned",
+        "players",
+        "on_player_died",
+        "on_player_joined",
+        "tags",
+        "iris",
+        "config",
+        "create_instance",
+        "get_map_root",
+        "framework",
+        "on_player_left"
+    ]
+}
