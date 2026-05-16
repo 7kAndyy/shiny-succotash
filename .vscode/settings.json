@@ -15,6 +15,7 @@
         "create_instance",
         "get_map_root",
         "framework",
-        "on_player_left"
+        "on_player_left",
+        "set_require_domain"
     ]
 }
