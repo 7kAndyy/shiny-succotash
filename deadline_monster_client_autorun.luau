@@ -104,6 +104,24 @@ function client_module:createNewShield(): Part
     amd.CollisionGroup = "wall"
     amd.Size = Vector3.new(75, 75, 0.125)
     amd.Parent = get_map_root() -- navigation_module:getIgnoreFolderUsingTaggedChildren()
+
+    --[[ Spherical Shield 
+        local amd: Part = create_instance("Part")
+        amd.Name = "anti-monster device"
+        amd.Transparency = 0
+        amd.Material = Enum.Material.ForceField
+        amd.Color = Color3.fromRGB(255, 255, 255)
+        amd.CastShadow = false
+        amd.Anchored = true
+        amd.CanCollide = false
+        amd.CanQuery = true -- This needs to be enabled
+        amd.CanTouch = false
+        amd.CollisionGroup = "wall"
+        amd.Shape = Enum.PartType.Ball
+        amd.Size = Vector3.new(15, 15, 15)
+        amd.Parent = get_map_root() -- navigation_module:getIgnoreFolderUsingTaggedChildren()
+    ]]
+    
     return amd
 end
 
@@ -121,6 +139,14 @@ local function AMD_update(delta_time)
 
             anti_monster_device.Position = amd_new_position
             anti_monster_device.Orientation = amd_new_ori
+
+            --[[ Spherical Shield
+                local camera_cframe: CFrame = framework.character.get_camera_cframe()
+                local amd_new_cframe: CFrame = camera_cframe
+                local amd_new_position: Vector3 = amd_new_cframe.Position
+
+                anti_monster_device.Position = amd_new_position
+            ]]
         end
     end
 end

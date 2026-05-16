@@ -11,7 +11,7 @@ local MAP_PRESET = "darkworld"
 local MONSTER_COUNT = 20
 local ENEMY_BOT_COUNT = 0
 local PLAYER_SETUP_CODES = require("deadline_monster_setup_codes.luau")
-local COMMAND_PREFIX = ":"
+local CHAT_COMMAND_PREFIX = ":"
 
 -- Variables
 local player_setup_ignore_list = {} --:: {[string]: {["primary" | "secondary"]: {string}}}
@@ -276,12 +276,12 @@ local function onPlayerJoined(name)
         warn("player could not be referenced:", name)
     end
 
-    chat.send_ingame_announcement(string.format("%s has joined the server.", name))
+    chat.send_ingame_notification(string.format("%s has joined the server.", name))
 end
 
 local function onPlayerLeft(name)
     print("player left:", name)
-    chat.send_ingame_announcement(string.format("%s has left the server.", name))
+    chat.send_ingame_notification(string.format("%s has left the server.", name))
 end
 
 local function playerChatted(sender, channel, content)
