@@ -11,6 +11,7 @@ local MAP_PRESET = "darkworld"
 local MONSTER_COUNT = 20
 local ENEMY_BOT_COUNT = 0
 local PLAYER_SETUP_CODES = require("deadline_monster_setup_codes.luau")
+local SERVER_SOUNDS = require("deadline_monster_sounds.luau")
 local CHAT_COMMAND_PREFIX = ":"
 
 -- Variables
@@ -22,16 +23,12 @@ function server_module:getPlayerSetupIgnoreList(playerName: string)
     local t = nil
     if player_setup_ignore_list[playerName] then
         t = player_setup_ignore_list[playerName]
-        print("addToSetupIgnoreList: found", playerName.. "'s setup ignore list")
     else
-        warn("addToSetupIgnoreList: could not find", playerName.. "'s setup ignore list")
         player_setup_ignore_list[playerName] = {
             primary = {},
             secondary = {}
         }
         t = player_setup_ignore_list[playerName]
-        
-        warn("addToSetupIgnoreList: created", playerName.. "'s setup ignore list")
     end
 
     return t
@@ -43,7 +40,6 @@ local function addToSetupIgnoreList(playerName: string, weaponCode: string, setu
         local t_slot = t[weaponCode]
         if t_slot then
             table.insert(t_slot, setupCode)
-            print("addToSetupIgnoreList: put", setupCode, "in", playerName.. "'s ", weaponCode, " setup ignore list")
         else
             warn("addToSetupIgnoreList: player_setup_ignore_list[".. playerName.. "][".. weaponCode.."] is nil")
         end
@@ -74,12 +70,10 @@ local function setupIgnoreListContainsGun(playerName: string, weaponCode: string
 end
 
 local function resetSetupIgnoreList(playerName: string, weaponCode: string)
-    warn("Reset function called:")
     if weaponCode then
         local t = player_setup_ignore_list[playerName]
         if t then
             t[weaponCode] = {}
-            warn("resetSetupIgnoreList: reset", playerName.. "'s", weaponCode, "setup ignore list")
         else
             warn("resetSetupIgnoreList: player_setup_ignore_list[".. playerName.. "] is nil")
         end
@@ -109,7 +103,6 @@ local function getRandomSetupCode(slot_code: string, player: luauInstance | stri
         
         if player then
             local ignore_list = server_module:getPlayerSetupIgnoreList(player)
-            warn(#ignore_list[slot_code], ">=", #PLAYER_SETUP_CODES[slot_code], "=", #ignore_list >= #PLAYER_SETUP_CODES[slot_code])
             if #ignore_list[slot_code] >= #PLAYER_SETUP_CODES[slot_code] then
                 resetSetupIgnoreList(player, slot_code)
             end
@@ -259,8 +252,8 @@ end
 local function onPlayerDied(name, position, killer_data, stats_counted)
     local player = players.get(name)
     if player then
-        -- stuff
         print(position, killer_data, stats_counted)
+        local death_sound = SERVER_SOUNDS:insertSoundToWorkspace()
     else
         warn("player could not be referenced:", name)
     end

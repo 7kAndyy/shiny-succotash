@@ -4,7 +4,7 @@ local gui_module = {}
 local navigation_module = {}
 
 -- Constants
-local AMD_DISTANCE = 7.5
+local AMS_DISTANCE = 7.5
 local SWITCH_SOUNDS = false :: boolean
 local ONLY_SWAP_VALID_SOUNDS = false :: boolean
 
@@ -91,47 +91,47 @@ end
 -- Creates a transparent shield that gives players a way to directly look at the monster without it disappearing
 -- and lets players approach the monster (as long as the shield covers them)
 function client_module:createNewShield(): Part
-    local amd: Part = create_instance("Part")
-    amd.Name = "anti-monster device"
-    amd.Transparency = 0
-    amd.Material = Enum.Material.ForceField
-    amd.Color = Color3.fromRGB(255, 255, 255)
-    amd.CastShadow = false
-    amd.Anchored = true
-    amd.CanCollide = false
-    amd.CanQuery = true -- This needs to be enabled
-    amd.CanTouch = false
-    amd.CollisionGroup = "wall"
-    amd.Size = Vector3.new(75, 75, 0.125)
-    amd.Parent = get_map_root() -- navigation_module:getIgnoreFolderUsingTaggedChildren()
+    local ams: Part = create_instance("Part")
+    ams.Name = "Anti-Monster Shield"
+    ams.Transparency = 0
+    ams.Material = Enum.Material.ForceField
+    ams.Color = Color3.fromRGB(255, 255, 255)
+    ams.CastShadow = false
+    ams.Anchored = true
+    ams.CanCollide = false
+    ams.CanQuery = true -- This needs to be enabled
+    ams.CanTouch = false
+    ams.CollisionGroup = "wall"
+    ams.Size = Vector3.new(75, 75, 0.125)
+    ams.Parent = get_map_root() -- navigation_module:getIgnoreFolderUsingTaggedChildren()
 
     --[[ Spherical Shield 
-        local amd: Part = create_instance("Part")
-        amd.Name = "anti-monster device"
-        amd.Transparency = 0
-        amd.Material = Enum.Material.ForceField
-        amd.Color = Color3.fromRGB(255, 255, 255)
-        amd.CastShadow = false
-        amd.Anchored = true
-        amd.CanCollide = false
-        amd.CanQuery = true -- This needs to be enabled
-        amd.CanTouch = false
-        amd.CollisionGroup = "wall"
-        amd.Shape = Enum.PartType.Ball
-        amd.Size = Vector3.new(15, 15, 15)
-        amd.Parent = get_map_root() -- navigation_module:getIgnoreFolderUsingTaggedChildren()
+        local ams: Part = create_instance("Part")
+        ams.Name = "anti-monster device"
+        ams.Transparency = 0
+        ams.Material = Enum.Material.ForceField
+        ams.Color = Color3.fromRGB(255, 255, 255)
+        ams.CastShadow = false
+        ams.Anchored = true
+        ams.CanCollide = false
+        ams.CanQuery = true -- This needs to be enabled
+        ams.CanTouch = false
+        ams.CollisionGroup = "wall"
+        ams.Shape = Enum.PartType.Ball
+        ams.Size = Vector3.new(15, 15, 15)
+        ams.Parent = get_map_root() -- navigation_module:getIgnoreFolderUsingTaggedChildren()
     ]]
     
-    return amd
+    return ams
 end
 
--- Renderstep function for the AMD_update renderstep loop
+-- Renderstep function for the AMS_update renderstep loop
 -- Updates the AMD position
-local function AMD_update(delta_time)
+local function AMS_update(delta_time)
     if framework.character.is_alive() then
         if anti_monster_device ~= nil then
             local camera_cframe: CFrame = framework.character.get_camera_cframe()
-            local amd_new_cframe: CFrame = camera_cframe + camera_cframe.LookVector * AMD_DISTANCE
+            local amd_new_cframe: CFrame = camera_cframe + camera_cframe.LookVector * AMS_DISTANCE
             local amd_new_position: Vector3 = amd_new_cframe.Position
             local amd_ori_rx, amd_ori_ry, amd_ori_rz: number = amd_new_cframe:ToOrientation()
             local amd_ori_dx, amd_ori_dy, amd_ori_dz: number = math.deg(amd_ori_rx), math.deg(amd_ori_ry), math.deg(amd_ori_rz)
@@ -155,7 +155,7 @@ end
 function client_module.on_spawned()
     print("spawned")
     anti_monster_device = client_module:createNewShield()
-    amd_connection = time.renderstep("AMD_update", AMD_update)
+    amd_connection = time.renderstep("AMS_update", AMS_update)
 end
 
 --  Method for the framework.on_died event
@@ -163,13 +163,11 @@ function client_module.on_died()
     print("died")
     if anti_monster_device ~= nil then
         anti_monster_device.destroy()
-        print("destroyed shield")
     end
 
     if amd_connection ~= nil then
         amd_connection:Disconnect()
         amd_connection = nil
-        print("disconnected")
     end
 end
 

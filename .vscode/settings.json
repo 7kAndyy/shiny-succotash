@@ -16,6 +16,7 @@
         "get_map_root",
         "framework",
         "on_player_left",
-        "set_require_domain"
+        "set_require_domain",
+        "sound"
     ]
 }
